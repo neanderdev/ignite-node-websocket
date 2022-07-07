@@ -7,6 +7,7 @@ import { GetAllUserService } from "../services/GetAllUserService";
 import { CreateChatRoomService } from "../services/CreateChatRoomService";
 import { GetUserBySocketIdService } from "../services/GetUserBySocketIdService";
 import { GetChatRoomByUsersService } from "../services/GetChatRoomByUsersService";
+import { GetMessageByChatRoomService } from "../services/GetMessageByChatRoomService";
 import { CreateMessageService } from "../services/CreateMessageService";
 
 io.on("connect", (socket) => {
@@ -41,6 +42,9 @@ io.on("connect", (socket) => {
     const getChatRoomByUsersService = container.resolve(
       GetChatRoomByUsersService
     );
+    const getMessageByChatRoomService = container.resolve(
+      GetMessageByChatRoomService
+    );
 
     const userLogged = await getUserBySocketIdService.execute(socket.id);
 
@@ -55,7 +59,9 @@ io.on("connect", (socket) => {
 
     socket.join(room.idChatRoom);
 
-    callback(room);
+    const messages = await getMessageByChatRoomService.execute(room.idChatRoom);
+
+    callback({ room, messages });
   });
 
   socket.on("message", async (data) => {
